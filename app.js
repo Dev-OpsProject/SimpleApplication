@@ -12,11 +12,30 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+app.disable('x-powered-by');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+    res.set('X-Content-Type-Options', 'nosniff')
+  }
+}));
+
+app.use(csrf({cookie:{key:'XSRF-TOKEN',path:'/', secure: true, httpOnly: true, sameSite: 'lax'}}));
+
+app.use(function (req, res, next) {
+  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+      secure: true,
+      httpOnly: true,
+      sameSite: 'lax'
+  });
+  res.locals.csrftoken = req.csrfToken();
+  next();
+});
 
 app.use('/', indexRouter);
 
