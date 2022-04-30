@@ -3,10 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var csrf = require('csurf');
 
 var indexRouter = require('./routes/index');
 
 var app = express();
+var csrfProtection = csrf({ cookie: true })
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
