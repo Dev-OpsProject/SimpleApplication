@@ -54,7 +54,7 @@ jobs:
           command: echo $SERVER > server.crt && echo $PRIVATE_KEY > privatekey.pem
       - run:
           name: build-docker-image-for-integration-environment
-          command: docker create -p 443:443 --name integration_app $IMAGE_NAME
+          command: docker create -p 8443:8443 --name integration_app $IMAGE_NAME
       - run:
           name: copy-server-cert-and-private-key-accross
           command: docker cp ./privatekey.pem integration_app:/private.pem; docker cp ./server.crt integration_app:/server.crt
@@ -63,7 +63,7 @@ jobs:
           command: docker start integration_app
       - run:
           name: run-zap-scan-against-container
-          command: CONTAINER_IP=$(docker inspect integration_app --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'); docker run -t owasp/zap2docker-stable zap-baseline.py -t https://63.35.201.84:8443/ -P 8443
+          command: CONTAINER_IP=$(docker inspect integration_app --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'); docker run -t owasp/zap2docker-stable zap-baseline.py -t https://$CONTAINER_IP/ -P 8443
   deploy:
     docker:
       - image: circleci/node:10.16.3
